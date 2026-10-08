@@ -4,9 +4,14 @@
 
 @layer base {
   html, body {
-    @apply bg-[#05172e] text-white font-sans antialiased;
+    background-color: #05172e !important;
+    @apply text-white font-sans antialiased;
     min-height: 100dvh;
     overflow-x: hidden;
+  }
+  #root {
+    background-color: #05172e !important;
+    min-height: 100dvh;
   }
 }
 

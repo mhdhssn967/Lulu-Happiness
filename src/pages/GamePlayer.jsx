@@ -282,7 +282,7 @@ export default function GamePlayer() {
 
     function createParallaxEntity(yPos) {
       const mat = bgMats[Math.floor(Math.random() * bgMats.length)];
-      const size = 1.5 + Math.random() * 3.5; // Smaller sizes from 1.5 to 5
+      const size = 3.5 + Math.random() * 4.5; // Larger sizes from 3.5 to 8
       const geo = new THREE.PlaneGeometry(size, size);
       const mesh = new THREE.Mesh(geo, mat);
       
@@ -301,8 +301,8 @@ export default function GamePlayer() {
       });
     }
 
-    // Initial scatter of planets/spaceships
-    for (let i = -10; i < 40; i += 6) {
+    // Initial scatter of planets/spaceships (closer together)
+    for (let i = -10; i < 40; i += 3.5) {
       createParallaxEntity(i);
     }
     
@@ -455,11 +455,28 @@ export default function GamePlayer() {
     window.addEventListener('keyup', handleKeyUp);
     window.addEventListener('deviceorientation', handleOrientation);
 
+    const resizeRendererToDisplaySize = (renderer) => {
+      const canvas = renderer.domElement;
+      const width = canvas.clientWidth;
+      const height = canvas.clientHeight;
+      const needResize = canvas.width !== width || canvas.height !== height;
+      if (needResize) {
+        renderer.setSize(width, height, false);
+      }
+      return needResize;
+    };
+
     // Animation Loop
     let animationId;
     const animate = () => {
       if (isGameOver) return;
       animationId = requestAnimationFrame(animate);
+      
+      if (resizeRendererToDisplaySize(renderer)) {
+        const canvas = renderer.domElement;
+        camera.aspect = canvas.clientWidth / canvas.clientHeight;
+        camera.updateProjectionMatrix();
+      }
 
       if (mixer) {
         mixer.update(clock.getDelta());
@@ -645,7 +662,7 @@ export default function GamePlayer() {
       
       const topEntity = parallaxEntities[parallaxEntities.length - 1];
       if (camera.position.y + 25 > topEntity.baseY) {
-        createParallaxEntity(topEntity.baseY + 6);
+        createParallaxEntity(topEntity.baseY + 3.5);
       }
       
       if (parallaxEntities[0].baseY < camera.position.y - 15) {
@@ -694,16 +711,8 @@ export default function GamePlayer() {
 
     animate();
 
-    const handleResize = () => {
-      camera.aspect = window.innerWidth / window.innerHeight;
-      camera.updateProjectionMatrix();
-      renderer.setSize(window.innerWidth, window.innerHeight);
-    };
-    window.addEventListener('resize', handleResize);
-
     return () => {
       cancelAnimationFrame(animationId);
-      window.removeEventListener('resize', handleResize);
       window.removeEventListener('keydown', handleKeyDown);
       window.removeEventListener('keyup', handleKeyUp);
       window.removeEventListener('deviceorientation', handleOrientation);
@@ -714,12 +723,12 @@ export default function GamePlayer() {
   }, [isGameOver]);
 
   return (
-    <div className="fixed top-0 left-0 w-screen h-[100dvh] z-[100] bg-[#0A1128] flex flex-col overflow-hidden animate-[fadeIn_0.3s_ease-out]">
+    <div className="fixed top-0 left-0 w-screen h-[100dvh] z-[100] bg-[#0A1128] overflow-hidden animate-[fadeIn_0.3s_ease-out]">
       
       {/* Seamless Scrolling Background */}
       <div 
         ref={bgRef}
-        className="absolute inset-0 z-0 bg-repeat-y"
+        className="absolute inset-[-5%] z-0 bg-repeat-y blur-[3px]"
         style={{ 
           backgroundImage: "url('/game1/bg.webp')",
           backgroundSize: '100% auto',
@@ -728,15 +737,15 @@ export default function GamePlayer() {
       ></div>
 
       {/* Top HUD */}
-      <div className="absolute top-0 left-0 right-0 p-6 flex justify-between items-center z-20">
+      <div className="absolute top-0 left-0 right-0 p-6 flex justify-between items-center z-20 pointer-events-none">
         <button 
           onClick={() => navigate(-1)}
-          className="w-10 h-10 rounded-full bg-white/10 backdrop-blur-md flex items-center justify-center active:scale-95 transition-transform"
+          className="w-10 h-10 rounded-full bg-white/10 backdrop-blur-md flex items-center justify-center active:scale-95 transition-transform pointer-events-auto"
         >
           <X size={24} className="text-white" />
         </button>
         
-        <div className="flex gap-3">
+        <div className="flex gap-3 pointer-events-auto">
           <div className="bg-black/40 backdrop-blur px-4 py-2 rounded-full border border-white/20 shadow-lg flex items-center gap-2">
             <div className="w-4 h-4 rounded-full bg-yellow-400 border border-yellow-200"></div>
             <span className="text-white font-bold">{coinsCollected}</span>
@@ -762,7 +771,7 @@ export default function GamePlayer() {
             }
           }
         }}
-        className="w-full h-full block touch-none z-10 relative" 
+        className="absolute inset-0 w-full h-full block touch-none z-10" 
       />
 
       {/* Loading Screen Overlay */}
@@ -795,6 +804,8 @@ export default function GamePlayer() {
             onClick={() => {
               setScore(0);
               setCoinsCollected(0);
+              setLoadProgress(0);
+              setIsLoading(true);
               setIsGameOver(false);
             }}
             className="bg-happiness-lime text-black font-bold text-xl px-8 py-4 rounded-2xl flex items-center gap-3 active:scale-95 transition-transform shadow-[0_0_30px_rgba(154,205,50,0.5)] pointer-events-auto"

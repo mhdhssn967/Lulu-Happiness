@@ -19,18 +19,6 @@ export default function Onboarding() {
     e.preventDefault();
     if (name.trim().length > 0) {
       setUser({ name: name.trim(), phone });
-      
-      // Force Fullscreen
-      try {
-        const docEl = document.documentElement;
-        if (docEl.requestFullscreen) {
-          docEl.requestFullscreen().catch(() => {});
-        } else if (docEl.webkitRequestFullscreen) {
-          docEl.webkitRequestFullscreen().catch(() => {});
-        }
-      } catch (err) {
-        console.warn('Fullscreen request failed', err);
-      }
     }
   };
 
