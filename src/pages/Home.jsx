@@ -1,0 +1,149 @@
+import React, { useState, useEffect } from 'react';
+import { Link } from 'react-router-dom';
+import { ChevronRight, Trophy, Gift, Lock } from 'lucide-react';
+import HeroCarousel from '../components/HeroCarousel';
+
+import gameImg1 from '../games/image.png';
+import gameImg2 from '../games/image copy.png';
+import gameImg3 from '../games/image copy 3.png';
+import gameImg4 from '../games/image copy 4.png';
+
+const games = [
+  { id: 'space-jump', title: 'Space Jump', thumbnail: gameImg1 },
+  { id: 'match', title: 'Match', thumbnail: gameImg2 },
+  { id: 'brain', title: 'Brain', thumbnail: gameImg3, locked: true },
+  { id: 'challenge', title: 'Challenge', thumbnail: gameImg4, locked: true }
+];
+
+const recentWins = [
+  { id: 1, name: 'ALEX H.', reward: 'Mouzy 50% Off', img: gameImg1 },
+  { id: 2, name: 'PRIYA K.', reward: 'Free Grillax Meal', img: gameImg2 },
+  { id: 3, name: 'RAHUL S.', reward: 'Ebadi 30% Off', img: gameImg3 },
+  { id: 4, name: 'SARAH L.', reward: 'Cassava Voucher', img: gameImg4 },
+  { id: 5, name: 'AMIT B.', reward: 'BIBA ₹500 Off', img: gameImg1 },
+  { id: 6, name: 'JESSICA M.', reward: 'The Pulp Free Drink', img: gameImg2 },
+  { id: 7, name: 'DAVID W.', reward: 'Free Belgian Fries', img: gameImg3 },
+  { id: 8, name: 'SNEHA P.', reward: 'Ganga Spa 40% Off', img: gameImg4 },
+  { id: 9, name: 'JOHN D.', reward: 'Kochi Kitchen Meal', img: gameImg1 },
+  { id: 10, name: 'MARIA C.', reward: 'Toni&Guy Haircut', img: gameImg2 }
+];
+
+export default function Home() {
+  return (
+    <div className="flex-1 pb-24 bg-transparent overflow-x-hidden relative z-10">
+      {/* Hero Banner Carousel */}
+      <HeroCarousel />
+      
+      {/* Recent Big Win */}
+      <div className="mt-2 mb-6 animate-fade-in-up" style={{ animationDelay: '100ms' }}>
+        <div className="px-4 flex items-center gap-2 mb-3">
+          <Trophy size={20} className="text-[#3b82f6] drop-shadow-[0_0_8px_rgba(59,130,246,0.5)]" />
+          <h2 className="text-[17px] font-bold text-white tracking-wide">Recent Wins</h2>
+        </div>
+        
+        <div className="relative overflow-hidden w-full pb-2">
+          
+          <div className="animate-marquee-scroll gap-3 pl-4">
+            {[...recentWins, ...recentWins].map((win, index) => (
+              <div key={`${win.id}-${index}`} className="w-[170px] bg-[#141824] border border-white/5 rounded-2xl p-2 flex items-center gap-2.5 shadow-md hover:bg-[#1A1F2E] transition-all cursor-default">
+                <img src={win.img} alt="Game Icon" className="w-10 h-10 rounded-lg object-cover shrink-0" />
+                <div className="flex flex-col justify-center overflow-hidden w-full">
+                  <span className="text-[11px] text-white/90 font-bold truncate w-full italic">{win.name}</span>
+                  <span className="text-[10px] font-bold text-green-500 truncate w-full">{win.reward}</span>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+
+      {/* Game Selection */}
+      <div className="px-4 pb-4 animate-fade-in-up" style={{ animationDelay: '200ms' }}>
+        <div className="flex justify-between items-center mb-4 px-1">
+          <h2 className="text-lg font-bold text-white tracking-wide">Games</h2>
+          <button className="text-happiness-lime font-medium text-sm hover:text-green-300 transition-colors">View All</button>
+        </div>
+        
+        <div className="grid grid-cols-4 gap-3">
+          {games.map(game => (
+            <Link 
+              key={game.id} 
+              to={game.locked ? '#' : `/game/${game.id}`}
+              onClick={(e) => {
+                if (game.locked) {
+                  e.preventDefault();
+                  return;
+                }
+                try {
+                  const docEl = document.documentElement;
+                  if (docEl.requestFullscreen) docEl.requestFullscreen().catch(() => {});
+                  else if (docEl.webkitRequestFullscreen) docEl.webkitRequestFullscreen().catch(() => {});
+                } catch (err) {}
+              }}
+              className={`rounded-2xl relative aspect-square shadow-lg transition-all duration-300 overflow-hidden group cursor-pointer border border-white/5 bg-[#141824] flex flex-col ${!game.locked ? 'active:scale-95 hover:-translate-y-1 hover:border-happiness-lime/50 hover:shadow-[0_8px_15px_rgba(154,205,50,0.3)]' : ''}`}
+            >
+              <div className="absolute inset-0 w-full h-full">
+                 <img 
+                   src={game.thumbnail} 
+                   alt={game.title} 
+                   className={`w-full h-full object-cover transition-transform duration-500 ${!game.locked ? 'group-hover:scale-110' : ''}`} 
+                 />
+                 <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent"></div>
+              </div>
+              
+              <div className="absolute bottom-0 left-0 right-0 p-2 flex justify-center items-end">
+                <span className="text-white text-[10px] sm:text-xs font-bold capitalize drop-shadow-md z-10 text-center truncate">{game.title}</span>
+              </div>
+
+              {game.locked && (
+                <div className="absolute inset-0 bg-black/60 flex items-center justify-center backdrop-blur-[3px]">
+                  <Lock className="text-white/60 drop-shadow-lg z-10" size={16} strokeWidth={1.5} />
+                </div>
+              )}
+            </Link>
+          ))}
+        </div>
+
+        {/* Modern Action Buttons */}
+        <div className="mt-6 flex flex-col gap-3 animate-fade-in-up" style={{ animationDelay: '300ms' }}>
+          <Link 
+            to="/rewards" 
+            className="relative bg-gradient-to-r from-lulu-green to-[#0ba83f] shadow-[0_8px_20px_rgba(0,143,90,0.4)] rounded-2xl py-3.5 px-4 flex items-center justify-between text-white active:scale-95 transition-transform overflow-hidden group"
+          >
+            <div className="absolute inset-0 -translate-x-full bg-gradient-to-r from-transparent via-white/20 to-transparent skew-x-12 animate-[shine_3s_infinite_ease-in-out]"></div>
+            <div className="flex items-center gap-3 z-10">
+              <div className="p-2 bg-white/20 rounded-xl backdrop-blur-sm">
+                <Gift size={22} strokeWidth={2} color="#fff" />
+              </div>
+              <div className="flex flex-col text-left">
+                <span className="font-bold text-[16px] tracking-wide">Unlock Rewards</span>
+                <span className="text-xs text-white/70 font-medium">Claim your daily bonuses</span>
+              </div>
+            </div>
+            <div className="w-8 h-8 rounded-full bg-white/20 flex items-center justify-center z-10">
+              <ChevronRight size={18} />
+            </div>
+          </Link>
+          
+          <Link 
+            to="/leaderboard" 
+            className="relative bg-[#1A1F2E] border border-white/10 shadow-lg rounded-2xl py-3.5 px-4 flex items-center justify-between text-white active:scale-95 transition-transform hover:bg-[#202638]"
+          >
+            <div className="flex items-center gap-3 z-10">
+              <div className="p-2 bg-yellow-500/20 rounded-xl">
+                <Trophy size={22} strokeWidth={2} color="#EAB308" />
+              </div>
+              <div className="flex flex-col text-left">
+                <span className="font-bold text-[16px] tracking-wide text-white">Global Leaderboard</span>
+                <span className="text-xs text-white/50 font-medium">Rank up and win big</span>
+              </div>
+            </div>
+            <div className="w-8 h-8 rounded-full bg-white/5 flex items-center justify-center z-10">
+              <ChevronRight size={18} />
+            </div>
+          </Link>
+        </div>
+      </div>
+    </div>
+  );
+}
