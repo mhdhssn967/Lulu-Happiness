@@ -3,8 +3,10 @@
 @tailwind utilities;
 
 @layer base {
-  body {
-    @apply bg-gray-100 text-textDark font-sans antialiased;
+  html, body {
+    @apply bg-[#05172e] text-white font-sans antialiased;
+    min-height: 100dvh;
+    overflow-x: hidden;
   }
 }
 

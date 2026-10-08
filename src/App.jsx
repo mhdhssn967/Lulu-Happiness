@@ -18,9 +18,9 @@ function App() {
 
   return (
     <Router>
-      <div className="bg-gray-200 min-h-screen flex justify-center">
+      <div className="bg-[#05172e] min-h-[100dvh] flex justify-center">
         {/* Mobile App Container Wrapper */}
-        <div className="w-full max-w-md bg-gradient-to-br from-[#05172e] via-[#0F3F73] to-[#164F8F] min-h-screen relative shadow-[0_0_50px_rgba(15,63,115,0.5)] flex flex-col overflow-hidden text-white">
+        <div className="w-full max-w-md bg-gradient-to-br from-[#05172e] via-[#0F3F73] to-[#164F8F] min-h-[100dvh] relative shadow-[0_0_50px_rgba(15,63,115,0.5)] flex flex-col overflow-x-hidden text-white">
           
           {/* Subtle Glowing Orbs (Brand colors) */}
           <div className="absolute top-[-15%] left-[-15%] w-[60%] h-[30%] bg-happiness-lime/10 rounded-full blur-[100px] pointer-events-none"></div>
