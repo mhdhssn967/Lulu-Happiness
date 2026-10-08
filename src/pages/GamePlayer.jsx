@@ -434,11 +434,25 @@ export default function GamePlayer() {
       if (e.key === 'ArrowRight') controlsRef.current.right = false;
     };
     
-    // Device Orientation for Phones (Analog Steering)
+    // Device Orientation for Phones & Tablets (Analog Steering)
     const handleOrientation = (e) => {
-      if (e.gamma === null) return;
-      // gamma is left/right tilt in degrees (-90 to 90).
-      let tilt = e.gamma;
+      let tilt = 0;
+      
+      // Detect if device is in portrait or landscape
+      const angle = window.orientation || (window.screen && window.screen.orientation ? window.screen.orientation.angle : 0);
+      
+      if (angle === 90) {
+        // Landscape (top edge on left) - tilting left/right changes beta
+        tilt = e.beta;
+      } else if (angle === -90 || angle === 270) {
+        // Landscape (top edge on right)
+        tilt = -e.beta;
+      } else {
+        // Portrait
+        tilt = e.gamma;
+      }
+      
+      if (tilt === null || isNaN(tilt)) return;
       
       // Cap the maximum tilt angle at 35 degrees for full speed
       if (tilt > 35) tilt = 35;
