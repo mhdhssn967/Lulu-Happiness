@@ -3,10 +3,10 @@ import { Link } from 'react-router-dom';
 import { ChevronRight, Trophy, Gift, Lock } from 'lucide-react';
 import HeroCarousel from '../components/HeroCarousel';
 
-import gameImg1 from '../games/image.png';
-import gameImg2 from '../games/image copy.png';
-import gameImg3 from '../games/image copy 3.png';
-import gameImg4 from '../games/image copy 4.png';
+const gameImg1 = 'https://firebasestorage.googleapis.com/v0/b/gamefaktory-1b0b8.firebasestorage.app/o/lulu-happiness%2Fgame1icon.webp?alt=media';
+const gameImg2 = 'https://firebasestorage.googleapis.com/v0/b/gamefaktory-1b0b8.firebasestorage.app/o/lulu-happiness%2Fimage%20copy.webp?alt=media';
+const gameImg3 = 'https://firebasestorage.googleapis.com/v0/b/gamefaktory-1b0b8.firebasestorage.app/o/lulu-happiness%2Fimage%20copy%203.webp?alt=media';
+const gameImg4 = 'https://firebasestorage.googleapis.com/v0/b/gamefaktory-1b0b8.firebasestorage.app/o/lulu-happiness%2Fimage%20copy%204.webp?alt=media';
 
 const games = [
   { id: 'space-jump', title: 'Space Jump', thumbnail: gameImg1 },
@@ -16,17 +16,40 @@ const games = [
 ];
 
 const recentWins = [
-  { id: 1, name: 'ALEX H.', reward: 'Mouzy 50% Off', img: gameImg1 },
-  { id: 2, name: 'PRIYA K.', reward: 'Free Grillax Meal', img: gameImg2 },
-  { id: 3, name: 'RAHUL S.', reward: 'Ebadi 30% Off', img: gameImg3 },
-  { id: 4, name: 'SARAH L.', reward: 'Cassava Voucher', img: gameImg4 },
-  { id: 5, name: 'AMIT B.', reward: 'BIBA ₹500 Off', img: gameImg1 },
-  { id: 6, name: 'JESSICA M.', reward: 'The Pulp Free Drink', img: gameImg2 },
-  { id: 7, name: 'DAVID W.', reward: 'Free Belgian Fries', img: gameImg3 },
-  { id: 8, name: 'SNEHA P.', reward: 'Ganga Spa 40% Off', img: gameImg4 },
-  { id: 9, name: 'JOHN D.', reward: 'Kochi Kitchen Meal', img: gameImg1 },
-  { id: 10, name: 'MARIA C.', reward: 'Toni&Guy Haircut', img: gameImg2 }
+  { id: 1, name: 'ALEX H.', reward: 'Mouzy 50% Off' },
+  { id: 2, name: 'PRIYA K.', reward: 'Free Grillax Meal' },
+  { id: 3, name: 'RAHUL S.', reward: 'Ebadi 30% Off' },
+  { id: 4, name: 'SARAH L.', reward: 'Cassava Voucher' },
+  { id: 5, name: 'AMIT B.', reward: 'BIBA ₹500 Off' },
+  { id: 6, name: 'JESSICA M.', reward: 'The Pulp Free Drink' },
+  { id: 7, name: 'DAVID W.', reward: 'Free Belgian Fries' },
+  { id: 8, name: 'SNEHA P.', reward: 'Ganga Spa 40% Off' },
+  { id: 9, name: 'JOHN D.', reward: 'Kochi Kitchen Meal' },
+  { id: 10, name: 'MARIA C.', reward: 'Toni&Guy Haircut' }
 ];
+
+const initialColors = [
+  'bg-gradient-to-br from-red-400 to-red-600 border-red-300', 
+  'bg-gradient-to-br from-blue-400 to-blue-600 border-blue-300', 
+  'bg-gradient-to-br from-emerald-400 to-emerald-600 border-emerald-300', 
+  'bg-gradient-to-br from-amber-400 to-orange-500 border-amber-300', 
+  'bg-gradient-to-br from-purple-400 to-purple-600 border-purple-300', 
+  'bg-gradient-to-br from-pink-400 to-pink-600 border-pink-300', 
+  'bg-gradient-to-br from-indigo-400 to-indigo-600 border-indigo-300', 
+  'bg-gradient-to-br from-teal-400 to-teal-600 border-teal-300'
+];
+
+const getInitials = (name) => {
+  return name.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase();
+};
+
+const getColorForName = (name) => {
+  let hash = 0;
+  for (let i = 0; i < name.length; i++) {
+    hash = name.charCodeAt(i) + ((hash << 5) - hash);
+  }
+  return initialColors[Math.abs(hash) % initialColors.length];
+};
 
 export default function Home() {
   return (
@@ -46,7 +69,9 @@ export default function Home() {
           <div className="animate-marquee-scroll gap-3 pl-4">
             {[...recentWins, ...recentWins].map((win, index) => (
               <div key={`${win.id}-${index}`} className="w-[170px] bg-[#141824] border border-white/5 rounded-2xl p-2 flex items-center gap-2.5 shadow-md hover:bg-[#1A1F2E] transition-all cursor-default">
-                <img src={win.img} alt="Game Icon" className="w-10 h-10 rounded-lg object-cover shrink-0" />
+                <div className={`w-10 h-10 rounded-[10px] shrink-0 flex items-center justify-center font-black text-white text-sm tracking-wider border shadow-[inset_0_2px_4px_rgba(255,255,255,0.4),0_2px_8px_rgba(0,0,0,0.3)] drop-shadow-md ${getColorForName(win.name)}`}>
+                  <span className="drop-shadow-md">{getInitials(win.name)}</span>
+                </div>
                 <div className="flex flex-col justify-center overflow-hidden w-full">
                   <span className="text-[11px] text-white/90 font-bold truncate w-full italic">{win.name}</span>
                   <span className="text-[10px] font-bold text-green-500 truncate w-full">{win.reward}</span>

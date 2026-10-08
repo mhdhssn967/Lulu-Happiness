@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useAppStore } from '../store/useAppStore';
-import logo from '../assets/happinesslogo.webp';
+const logo = 'https://firebasestorage.googleapis.com/v0/b/gamefaktory-1b0b8.firebasestorage.app/o/lulu-happiness%2Fhappinesslogo.webp?alt=media';
 import { ArrowRight, CheckCircle2 } from 'lucide-react';
 import HeroCarousel from '../components/HeroCarousel';
 

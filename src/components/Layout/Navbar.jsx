@@ -1,6 +1,6 @@
 import React from 'react';
 import { UserCircle } from 'lucide-react';
-import logo from '../../assets/happinesslogo.webp';
+const logo = 'https://firebasestorage.googleapis.com/v0/b/gamefaktory-1b0b8.firebasestorage.app/o/lulu-happiness%2Fhappinesslogo.webp?alt=media';
 import { useAppStore } from '../../store/useAppStore';
 
 export default function Navbar() {

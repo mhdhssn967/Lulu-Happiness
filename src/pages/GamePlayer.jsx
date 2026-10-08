@@ -3,6 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { X, RotateCcw } from 'lucide-react';
 import * as THREE from 'three';
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
+import { DRACOLoader } from 'three/examples/jsm/loaders/DRACOLoader.js';
 
 // --- Canvas Texture Generators ---
 function createPlatformTexture(colorBase, colorDark, colorHighlight) {
@@ -224,7 +225,11 @@ export default function GamePlayer() {
     // Fallback in case there are no assets to load (rare, but good for safety)
     setTimeout(() => { if (manager.itemsLoaded === manager.itemsTotal) setIsLoading(false); }, 500);
 
+    const dracoLoader = new DRACOLoader();
+    dracoLoader.setDecoderPath('https://www.gstatic.com/draco/v1/decoders/');
+
     const loader = new GLTFLoader(manager);
+    loader.setDRACOLoader(dracoLoader);
     loader.load('/character.glb', (gltf) => {
       const model = gltf.scene;
       model.scale.set(1.2, 1.2, 1.2);
@@ -270,7 +275,7 @@ export default function GamePlayer() {
     // --- Parallax Background Assets Setup ---
     const bgAssets = [];
     for (let i = 1; i <= 10; i++) {
-      bgAssets.push(`/game1/backgrounds/${i}.svg`);
+      bgAssets.push(`https://firebasestorage.googleapis.com/v0/b/gamefaktory-1b0b8.firebasestorage.app/o/lulu-happiness%2F${i}.webp?alt=media`);
     }
     const textureLoader = new THREE.TextureLoader(manager);
     const bgMats = bgAssets.map(url => new THREE.MeshBasicMaterial({
@@ -744,7 +749,7 @@ export default function GamePlayer() {
         ref={bgRef}
         className="absolute inset-[-5%] z-0 bg-repeat-y blur-[3px]"
         style={{ 
-          backgroundImage: "url('/game1/bg.webp')",
+          backgroundImage: "url('https://firebasestorage.googleapis.com/v0/b/gamefaktory-1b0b8.firebasestorage.app/o/lulu-happiness%2Fbg.webp?alt=media')",
           backgroundSize: '100% auto',
           backgroundPositionX: 'center'
         }}

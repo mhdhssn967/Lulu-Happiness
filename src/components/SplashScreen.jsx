@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import logo from '../assets/happinesslogo.webp';
+const logo = 'https://firebasestorage.googleapis.com/v0/b/gamefaktory-1b0b8.firebasestorage.app/o/lulu-happiness%2Fhappinesslogo.webp?alt=media';
 
 export default function SplashScreen({ onComplete }) {
   const [progress, setProgress] = useState(0);

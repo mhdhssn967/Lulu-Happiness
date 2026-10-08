@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from 'react';
 
-import hero1 from '../assets/heroimages/hero.png';
-import hero2 from '../assets/heroimages/image copy.png';
-import hero3 from '../assets/heroimages/image copy 2.png';
-import hero4 from '../assets/heroimages/image.png';
+const hero1 = 'https://firebasestorage.googleapis.com/v0/b/gamefaktory-1b0b8.firebasestorage.app/o/lulu-happiness%2Fhero.webp?alt=media';
+const hero2 = 'https://firebasestorage.googleapis.com/v0/b/gamefaktory-1b0b8.firebasestorage.app/o/lulu-happiness%2Fhero1.webp?alt=media';
+const hero3 = 'https://firebasestorage.googleapis.com/v0/b/gamefaktory-1b0b8.firebasestorage.app/o/lulu-happiness%2Fhero2.webp?alt=media';
+const hero4 = 'https://firebasestorage.googleapis.com/v0/b/gamefaktory-1b0b8.firebasestorage.app/o/lulu-happiness%2Fhero3.webp?alt=media';
 
 const heroBanners = [hero1, hero2, hero3, hero4];
 

@@ -1,7 +1,7 @@
 import React from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import { ChevronLeft, Play } from 'lucide-react';
-import gameImg1 from '../games/image.png';
+const gameImg1 = 'https://firebasestorage.googleapis.com/v0/b/gamefaktory-1b0b8.firebasestorage.app/o/lulu-happiness%2Fgame1icon.webp?alt=media';
 
 export default function GameHome() {
   const { id } = useParams();
