@@ -1,18 +1,15 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { ChevronRight, Trophy, Gift, Lock } from 'lucide-react';
+import { ChevronRight, Trophy, Gift, Lock, Play } from 'lucide-react';
 import HeroCarousel from '../components/HeroCarousel';
+import ImageWithSkeleton from '../components/ImageWithSkeleton';
 
-const gameImg1 = 'https://firebasestorage.googleapis.com/v0/b/gamefaktory-1b0b8.firebasestorage.app/o/lulu-happiness%2Fgame1icon.webp?alt=media';
-const gameImg2 = 'https://firebasestorage.googleapis.com/v0/b/gamefaktory-1b0b8.firebasestorage.app/o/lulu-happiness%2Fimage%20copy.webp?alt=media';
-const gameImg3 = 'https://firebasestorage.googleapis.com/v0/b/gamefaktory-1b0b8.firebasestorage.app/o/lulu-happiness%2Fimage%20copy%203.webp?alt=media';
-const gameImg4 = 'https://firebasestorage.googleapis.com/v0/b/gamefaktory-1b0b8.firebasestorage.app/o/lulu-happiness%2Fimage%20copy%204.webp?alt=media';
+const gameImg1 = 'https://firebasestorage.googleapis.com/v0/b/gamefaktory-1b0b8.firebasestorage.app/o/lulu-happiness%2Fspacejump.webp?alt=media';
+const gameImg2 = 'https://firebasestorage.googleapis.com/v0/b/gamefaktory-1b0b8.firebasestorage.app/o/lulu-happiness%2Fmatch3.webp?alt=media';
 
 const games = [
   { id: 'space-jump', title: 'Space Jump', thumbnail: gameImg1 },
-  { id: 'match', title: 'Match', thumbnail: gameImg2 },
-  { id: 'brain', title: 'Brain', thumbnail: gameImg3, locked: true },
-  { id: 'challenge', title: 'Challenge', thumbnail: gameImg4, locked: true }
+  { id: 'match', title: 'Match 3', thumbnail: gameImg2 }
 ];
 
 const recentWins = [
@@ -89,42 +86,28 @@ export default function Home() {
           <button className="text-happiness-lime font-medium text-sm hover:text-green-300 transition-colors">View All</button>
         </div>
         
-        <div className="grid grid-cols-4 gap-3">
+        <div className="grid grid-cols-1 gap-4">
           {games.map(game => (
             <Link 
               key={game.id} 
-              to={game.locked ? '#' : `/game/${game.id}`}
-              onClick={(e) => {
-                if (game.locked) {
-                  e.preventDefault();
-                  return;
-                }
-                try {
-                  const docEl = document.documentElement;
-                  if (docEl.requestFullscreen) docEl.requestFullscreen().catch(() => {});
-                  else if (docEl.webkitRequestFullscreen) docEl.webkitRequestFullscreen().catch(() => {});
-                } catch (err) {}
-              }}
-              className={`rounded-2xl relative aspect-square shadow-lg transition-all duration-300 overflow-hidden group cursor-pointer border border-white/5 bg-[#141824] flex flex-col ${!game.locked ? 'active:scale-95 hover:-translate-y-1 hover:border-happiness-lime/50 hover:shadow-[0_8px_15px_rgba(154,205,50,0.3)]' : ''}`}
+              to={`/game/${game.id}`}
+              className="rounded-2xl relative aspect-[21/9] shadow-lg transition-all duration-300 overflow-hidden group cursor-pointer border border-white/5 bg-[#141824] flex flex-col active:scale-95 hover:-translate-y-1 hover:border-happiness-lime/50 hover:shadow-[0_8px_15px_rgba(154,205,50,0.3)]"
             >
               <div className="absolute inset-0 w-full h-full">
-                 <img 
+                 <ImageWithSkeleton 
                    src={game.thumbnail} 
                    alt={game.title} 
-                   className={`w-full h-full object-cover transition-transform duration-500 ${!game.locked ? 'group-hover:scale-110' : ''}`} 
+                   className="w-full h-full"
+                   imageClassName="transition-transform duration-700 group-hover:scale-105"
                  />
-                 <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent"></div>
+                 <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent pointer-events-none"></div>
               </div>
               
-              <div className="absolute bottom-0 left-0 right-0 p-2 flex justify-center items-end">
-                <span className="text-white text-[10px] sm:text-xs font-bold capitalize drop-shadow-md z-10 text-center truncate">{game.title}</span>
-              </div>
-
-              {game.locked && (
-                <div className="absolute inset-0 bg-black/60 flex items-center justify-center backdrop-blur-[3px]">
-                  <Lock className="text-white/60 drop-shadow-lg z-10" size={16} strokeWidth={1.5} />
+              <div className="absolute bottom-3 right-3 z-10">
+                <div className="bg-happiness-lime text-[#05172e] w-11 h-11 rounded-full flex items-center justify-center shadow-[0_4px_15px_rgba(154,205,50,0.5)] border border-[#7EA82B] group-hover:scale-110 transition-transform">
+                  <Play fill="currentColor" size={20} className="ml-1" />
                 </div>
-              )}
+              </div>
             </Link>
           ))}
         </div>

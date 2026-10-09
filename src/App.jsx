@@ -7,6 +7,7 @@ import Rewards from './pages/Rewards';
 import Leaderboard from './pages/Leaderboard';
 import GameHome from './pages/GameHome';
 import GamePlayer from './pages/GamePlayer';
+import GameMatch from './pages/GameMatch';
 import SplashScreen from './components/SplashScreen';
 import Onboarding from './pages/Onboarding';
 import { useAppStore } from './store/useAppStore';
@@ -55,7 +56,8 @@ function App() {
                 <Route path="/rewards" element={<Rewards />} />
                 <Route path="/leaderboard" element={<Leaderboard />} />
                 <Route path="/game/:id" element={<GameHome />} />
-                <Route path="/play/:id" element={<GamePlayer />} />
+                <Route path="/play/space-jump" element={<GamePlayer />} />
+                <Route path="/play/match" element={<GameMatch />} />
                 <Route path="/profile" element={
                   <div className="flex-1 p-8 text-center pt-20 flex flex-col items-center">
                     <div className="w-24 h-24 bg-white text-happiness-blueDark rounded-full flex items-center justify-center text-4xl font-bold mb-4 shadow-lg">

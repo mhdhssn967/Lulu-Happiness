@@ -1,5 +1,7 @@
 import React, { useState, useEffect } from 'react';
 
+import ImageWithSkeleton from './ImageWithSkeleton';
+
 const hero1 = 'https://firebasestorage.googleapis.com/v0/b/gamefaktory-1b0b8.firebasestorage.app/o/lulu-happiness%2Fhero.webp?alt=media';
 const hero2 = 'https://firebasestorage.googleapis.com/v0/b/gamefaktory-1b0b8.firebasestorage.app/o/lulu-happiness%2Fhero1.webp?alt=media';
 const hero3 = 'https://firebasestorage.googleapis.com/v0/b/gamefaktory-1b0b8.firebasestorage.app/o/lulu-happiness%2Fhero2.webp?alt=media';
@@ -66,12 +68,14 @@ export default function HeroCarousel() {
           style={{ transform: `translateX(calc(-${currentBanner * 100}% + ${dragOffset}px))` }}
         >
           {heroBanners.map((banner, index) => (
-            <img 
-              key={index}
-              src={banner} 
-              alt={`Promo Banner ${index + 1}`} 
-              className="w-full h-full object-cover shrink-0 pointer-events-none select-none" 
-            />
+            <div key={index} className="w-full h-full shrink-0">
+              <ImageWithSkeleton 
+                src={banner} 
+                alt={`Promo Banner ${index + 1}`} 
+                className="w-full h-full pointer-events-none select-none"
+                imageClassName="pointer-events-none select-none" 
+              />
+            </div>
           ))}
         </div>
       </div>

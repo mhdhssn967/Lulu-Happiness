@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { X, RotateCcw } from 'lucide-react';
+import { X, RotateCcw, Smartphone, ChevronLeft, ChevronRight } from 'lucide-react';
 import * as THREE from 'three';
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
 import { DRACOLoader } from 'three/examples/jsm/loaders/DRACOLoader.js';
@@ -113,11 +113,21 @@ export default function GamePlayer() {
   const canvasRef = useRef(null);
   const bgRef = useRef(null);
   const controlsRef = useRef({ left: false, right: false });
-  const [score, setScore] = useState(0);
+  const [giftsCollected, setGiftsCollected] = useState(0);
   const [coinsCollected, setCoinsCollected] = useState(0);
   const [isGameOver, setIsGameOver] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [loadProgress, setLoadProgress] = useState(0);
+  const [showInstruction, setShowInstruction] = useState(true);
+
+  useEffect(() => {
+    if (!isLoading && showInstruction) {
+      const timer = setTimeout(() => {
+        setShowInstruction(false);
+      }, 5000);
+      return () => clearTimeout(timer);
+    }
+  }, [isLoading, showInstruction]);
 
   useEffect(() => {
     const nav = document.querySelector('nav');
@@ -264,12 +274,28 @@ export default function GamePlayer() {
     // Fragile platform material (Red/Orange danger color)
     const fragileMat = new THREE.MeshBasicMaterial({ map: createPlatformTexture('#ef4444', '#7f1d1d', '#fca5a5'), transparent: true });
 
-    const coinMat = new THREE.MeshBasicMaterial({ map: createCoinTexture(), transparent: true });
+    const coinMat = new THREE.MeshBasicMaterial({ map: createCoinTexture(), transparent: true, side: THREE.DoubleSide });
     const coinGeo = new THREE.PlaneGeometry(0.8, 0.8);
+
+    const textureLoader = new THREE.TextureLoader(manager);
+    
+    // Preload CSS background image so LoadingManager waits for it
+    textureLoader.load('https://firebasestorage.googleapis.com/v0/b/gamefaktory-1b0b8.firebasestorage.app/o/lulu-happiness%2Fbg.webp?alt=media');
+    
+    const giftTex = textureLoader.load('https://firebasestorage.googleapis.com/v0/b/gamefaktory-1b0b8.firebasestorage.app/o/lulu-happiness%2Fgift.webp?alt=media');
+    const giftMat = new THREE.MeshBasicMaterial({ map: giftTex, color: 0xffffff, transparent: true, side: THREE.DoubleSide });
+    const giftGeo = new THREE.PlaneGeometry(0.8, 0.8);
+    const collectSound = new Audio('https://firebasestorage.googleapis.com/v0/b/gamefaktory-1b0b8.firebasestorage.app/o/lulu-happiness%2Fcollectpower.mp3?alt=media');
+    collectSound.crossOrigin = 'anonymous';
+    const coinSound = new Audio('https://firebasestorage.googleapis.com/v0/b/gamefaktory-1b0b8.firebasestorage.app/o/lulu-happiness%2Fsoundshelfstudio-ui-digital-coin-collect-524081.mp3?alt=media');
+    coinSound.crossOrigin = 'anonymous';
+    const failSound = new Audio('https://firebasestorage.googleapis.com/v0/b/gamefaktory-1b0b8.firebasestorage.app/o/lulu-happiness%2Fu_8g40a9z0la-fail-234710.mp3?alt=media');
+    failSound.crossOrigin = 'anonymous';
 
     // Entities
     const platforms = [];
     const coins = [];
+    const gifts = [];
     const parallaxEntities = [];
     
     // --- Parallax Background Assets Setup ---
@@ -277,13 +303,27 @@ export default function GamePlayer() {
     for (let i = 1; i <= 10; i++) {
       bgAssets.push(`https://firebasestorage.googleapis.com/v0/b/gamefaktory-1b0b8.firebasestorage.app/o/lulu-happiness%2F${i}.webp?alt=media`);
     }
-    const textureLoader = new THREE.TextureLoader(manager);
-    const bgMats = bgAssets.map(url => new THREE.MeshBasicMaterial({
-      map: textureLoader.load(url),
-      transparent: true,
-      opacity: 0.6, // Dimmed to blend into background
-      side: THREE.DoubleSide
-    }));
+    const bgMats = bgAssets.map(url => {
+      const tex = textureLoader.load(url, (loadedTex) => {
+        if (loadedTex.image) {
+          const img = loadedTex.image;
+          const canvas = document.createElement('canvas');
+          canvas.width = img.width || 512;
+          canvas.height = img.height || 512;
+          const ctx = canvas.getContext('2d');
+          ctx.filter = 'blur(4px)'; // Apply a slight blur
+          ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+          loadedTex.image = canvas;
+          loadedTex.needsUpdate = true;
+        }
+      });
+      return new THREE.MeshBasicMaterial({
+        map: tex,
+        transparent: true,
+        color: 0x777777, // Darken the texture
+        side: THREE.DoubleSide
+      });
+    });
 
     function createParallaxEntity(yPos) {
       const mat = bgMats[Math.floor(Math.random() * bgMats.length)];
@@ -301,13 +341,16 @@ export default function GamePlayer() {
         mat,
         size,
         aspectSet: false,
-        driftSpeed: (Math.random() > 0.5 ? 1 : -1) * (0.005 + Math.random() * 0.015), // Drift slowly in one constant direction
-        baseY: mesh.position.y
+        baseX: mesh.position.x,
+        baseY: mesh.position.y,
+        offset: Math.random() * Math.PI * 2,
+        swaySpeed: 0.5 + Math.random() * 1.0,
+        swayAmount: 0.2 + Math.random() * 0.5
       });
     }
 
-    // Initial scatter of planets/spaceships (closer together)
-    for (let i = -10; i < 40; i += 3.5) {
+    // Initial scatter of planets/spaceships (start higher up so they don't pop in at the ground)
+    for (let i = 25; i < 70; i += 3.5) {
       createParallaxEntity(i);
     }
     
@@ -356,9 +399,23 @@ export default function GamePlayer() {
     shockwave.rotation.x = -Math.PI / 2.2; // Slightly tilted up towards camera
     scene.add(shockwave);
     
+    // --- Burst Particles Setup ---
+    const burstParticleGeo = new THREE.SphereGeometry(0.12, 8, 8);
+    const burstParticleMat = new THREE.MeshBasicMaterial({ color: 0xffd700, transparent: true });
+    const burstParticles = [];
+    for (let i = 0; i < 15; i++) {
+      const mesh = new THREE.Mesh(burstParticleGeo, burstParticleMat);
+      mesh.visible = false;
+      scene.add(mesh);
+      burstParticles.push({ mesh, vx: 0, vy: 0, vz: 0, life: 0 });
+    }
+    
     // Starting Ground Platform (Flat 2D Plane)
     const groundGeo = new THREE.PlaneGeometry(25, 2);
-    const groundMat = new THREE.MeshBasicMaterial({ color: 0x1a365d });
+    const groundTex = createPlatformTexture('#fbc500', '#a37b00', '#ffe066');
+    groundTex.wrapS = THREE.RepeatWrapping;
+    groundTex.repeat.set(15, 1);
+    const groundMat = new THREE.MeshBasicMaterial({ map: groundTex, transparent: true });
     const ground = new THREE.Mesh(groundGeo, groundMat);
     ground.position.y = -2;
     scene.add(ground);
@@ -381,8 +438,18 @@ export default function GamePlayer() {
       const moveSpeed = isMoving ? (Math.random() > 0.5 ? 0.04 : -0.04) : 0;
       
       let coinMesh = null;
-      // 50% chance to spawn a coin above the platform
-      if (Math.random() > 0.5) {
+      let giftMesh = null;
+      
+      // 5% chance to spawn a gift instead of a coin
+      if (Math.random() > 0.95) {
+        giftMesh = new THREE.Mesh(giftGeo, giftMat);
+        giftMesh.position.y = yPos + 1.5;
+        giftMesh.position.x = mesh.position.x;
+        scene.add(giftMesh);
+        gifts.push({ mesh: giftMesh, baseY: yPos + 1.5, offset: Math.random() * Math.PI * 2 });
+      }
+      // 50% chance to spawn a coin above the platform (if no gift)
+      else if (Math.random() > 0.5) {
         coinMesh = new THREE.Mesh(coinGeo, coinMat);
         coinMesh.position.y = yPos + 1.2;
         coinMesh.position.x = mesh.position.x;
@@ -397,6 +464,7 @@ export default function GamePlayer() {
         isMoving, 
         moveSpeed, 
         attachedCoin: coinMesh,
+        attachedGift: giftMesh,
         isFragile,
         bouncesLeft: isFragile ? 1 : Infinity, // 1 bounce allowed, falls on 2nd impact
         isFalling: false
@@ -426,8 +494,8 @@ export default function GamePlayer() {
 
     // Game variables
     let velocityY = 0;
-    const gravity = -0.0035; // Reduced gravity for slower fall
-    const jumpForce = 0.22;  // Tuned to easily reach 1 platform, but never 2
+    const baseGravity = -0.0035; 
+    const baseJumpForce = 0.22;
     let highestY = 0;
     
     const handleKeyDown = (e) => {
@@ -490,6 +558,7 @@ export default function GamePlayer() {
     const animate = () => {
       if (isGameOver) return;
       animationId = requestAnimationFrame(animate);
+      const time = performance.now() * 0.001;
       
       if (resizeRendererToDisplaySize(renderer)) {
         const canvas = renderer.domElement;
@@ -501,8 +570,13 @@ export default function GamePlayer() {
         mixer.update(clock.getDelta());
       }
 
+      // Calculate dynamic speed multiplier (caps at +50% speed around height 400)
+      const speedMultiplier = 1.0 + Math.min(highestY / 400, 0.5);
+      const currentGravity = baseGravity * (speedMultiplier * speedMultiplier);
+      const currentJumpForce = baseJumpForce * speedMultiplier;
+
       // Physics
-      velocityY += gravity;
+      velocityY += currentGravity;
       player.position.y += velocityY;
 
       // Controls
@@ -552,7 +626,7 @@ export default function GamePlayer() {
             player.position.y - 0.5 <= p.mesh.position.y + 0.3 &&
             player.position.y - 0.5 >= p.mesh.position.y - 0.3
           ) {
-            velocityY = jumpForce; // Bounce
+            velocityY = currentJumpForce; // Bounce
             p.bounceTimer = Math.PI; // Trigger bounce animation
             
             // Play jump sound
@@ -607,6 +681,10 @@ export default function GamePlayer() {
           if (p.attachedCoin && p.attachedCoin.parent) {
             p.attachedCoin.position.x = p.mesh.position.x;
           }
+          // Keep attached gift synced
+          if (p.attachedGift && p.attachedGift.parent) {
+            p.attachedGift.position.x = p.mesh.position.x;
+          }
           // Bounce off invisible screen boundaries
           if (p.mesh.position.x > 3.5 || p.mesh.position.x < -3.5) {
             p.moveSpeed *= -1;
@@ -628,20 +706,57 @@ export default function GamePlayer() {
         }
       }
 
-      // Coin Collection
+      // Coin Collection & Animation
       for (let i = coins.length - 1; i >= 0; i--) {
         const c = coins[i];
+        
+        // Rotate coin on Y axis
+        c.rotation.y = time * 2;
+        
         if (Math.abs(player.position.x - c.position.x) < 1 && Math.abs(player.position.y - c.position.y) < 1) {
+          try {
+            coinSound.currentTime = 0;
+            coinSound.volume = 0.5;
+            coinSound.play().catch(()=>{});
+          } catch(e) {}
+          
           scene.remove(c);
           coins.splice(i, 1);
           setCoinsCollected(prev => prev + 1);
         }
       }
 
-      // Track Score
-      if (player.position.y > highestY) {
-        highestY = player.position.y;
-        setScore(Math.floor(highestY * 10));
+      // Gift Collection and Swaying
+      for (let i = gifts.length - 1; i >= 0; i--) {
+        const g = gifts[i];
+        // Swaying animation
+        g.mesh.position.y = g.baseY + Math.sin(time * 2 + g.offset) * 0.2;
+        g.mesh.rotation.z = Math.sin(time * 1.5 + g.offset) * 0.15;
+        
+        if (Math.abs(player.position.x - g.mesh.position.x) < 1.2 && Math.abs(player.position.y - g.mesh.position.y) < 1.2) {
+          // Play sound
+          try {
+            collectSound.currentTime = 0;
+            collectSound.volume = 0.8;
+            collectSound.play().catch(()=>{});
+          } catch(e) {}
+          
+          // Trigger Spheres Burst Effect
+          for (let p of burstParticles) {
+            p.mesh.position.copy(g.mesh.position);
+            p.mesh.visible = true;
+            const angle = Math.random() * Math.PI * 2;
+            const speed = 0.15 + Math.random() * 0.15;
+            p.vx = Math.cos(angle) * speed;
+            p.vy = Math.sin(angle) * speed + 0.1; // slight upward bias
+            p.vz = (Math.random() - 0.5) * 0.2;
+            p.life = 1.0;
+          }
+          
+          scene.remove(g.mesh);
+          gifts.splice(i, 1);
+          setGiftsCollected(prev => prev + 1);
+        }
       }
       
       // Smooth camera follow (ONLY moves upwards)
@@ -669,14 +784,15 @@ export default function GamePlayer() {
         shockMat.opacity -= 0.06; // Fade out
       }
       
-      // Update Parallax Entities (Constant drift, no oscillation)
+      // Update Parallax Entities (Swaying instead of constant drift)
       for (let p of parallaxEntities) {
         // Fix aspect ratio once the texture image is fully loaded
         if (!p.aspectSet && p.mat.map && p.mat.map.image && p.mat.map.image.width) {
           p.mesh.scale.y = p.mat.map.image.height / p.mat.map.image.width;
           p.aspectSet = true;
         }
-        p.mesh.position.x += p.driftSpeed;
+        p.mesh.position.x = p.baseX + Math.sin(time * p.swaySpeed + p.offset) * p.swayAmount;
+        p.mesh.position.y = p.baseY + Math.cos(time * p.swaySpeed + p.offset) * (p.swayAmount * 0.5);
       }
       
       const topEntity = parallaxEntities[parallaxEntities.length - 1];
@@ -689,6 +805,20 @@ export default function GamePlayer() {
         parallaxEntities.shift();
       }
       
+      // Update Burst Particles
+      for (let p of burstParticles) {
+        if (p.life > 0) {
+          p.mesh.position.x += p.vx;
+          p.mesh.position.y += p.vy;
+          p.mesh.position.z += p.vz;
+          p.vy -= 0.008; // gravity
+          p.life -= 0.025; // fade out
+          p.mesh.material.opacity = Math.max(0, p.life);
+          p.mesh.scale.setScalar(Math.max(0.01, p.life));
+          if (p.life <= 0) p.mesh.visible = false;
+        }
+      }
+
       // Generate new platforms infinitely
       const topPlatform = platforms[platforms.length - 1];
       if (camera.position.y + 15 > topPlatform.baseY) {
@@ -697,6 +827,7 @@ export default function GamePlayer() {
 
       // Cleanup old platforms
       if (platforms[0].baseY < camera.position.y - 15) {
+        if (platforms[0].attachedGift) scene.remove(platforms[0].attachedGift);
         scene.remove(platforms[0].mesh);
         platforms.shift();
       }
@@ -709,6 +840,11 @@ export default function GamePlayer() {
 
       // Game Over condition (fell off screen)
       if (player.position.y < camera.position.y - 10) {
+        try {
+          failSound.currentTime = 0;
+          failSound.volume = 0.7;
+          failSound.play().catch(()=>{});
+        } catch(e) {}
         setIsGameOver(true);
         cancelAnimationFrame(animationId);
       }
@@ -741,8 +877,18 @@ export default function GamePlayer() {
     };
   }, [isGameOver]);
 
+  // Calculate hue shift based on coins collected (changes every 10 coins)
+  const hueShift = Math.floor(coinsCollected / 10) * 80;
+
   return (
     <div className="fixed top-0 left-0 w-screen h-[100dvh] z-[100] bg-[#0A1128] overflow-hidden animate-[fadeIn_0.3s_ease-out]">
+      <style>{`
+        @keyframes tiltPhone {
+          0%, 100% { transform: rotate(0deg); }
+          25% { transform: rotate(-25deg); }
+          75% { transform: rotate(25deg); }
+        }
+      `}</style>
       
       {/* Seamless Scrolling Background */}
       <div 
@@ -751,7 +897,9 @@ export default function GamePlayer() {
         style={{ 
           backgroundImage: "url('https://firebasestorage.googleapis.com/v0/b/gamefaktory-1b0b8.firebasestorage.app/o/lulu-happiness%2Fbg.webp?alt=media')",
           backgroundSize: '100% auto',
-          backgroundPositionX: 'center'
+          backgroundPositionX: 'center',
+          filter: `hue-rotate(${hueShift}deg)`,
+          transition: 'filter 2s ease-in-out'
         }}
       ></div>
 
@@ -769,8 +917,9 @@ export default function GamePlayer() {
             <div className="w-4 h-4 rounded-full bg-yellow-400 border border-yellow-200"></div>
             <span className="text-white font-bold">{coinsCollected}</span>
           </div>
-          <div className="bg-black/40 backdrop-blur px-5 py-2 rounded-full border border-white/20 shadow-lg">
-            <span className="text-white font-bold">Score: <span className="text-happiness-lime">{score}</span></span>
+          <div className="bg-black/40 backdrop-blur px-5 py-2 rounded-full border border-white/20 shadow-lg flex items-center gap-2">
+            <span className="text-2xl" style={{ lineHeight: 1 }}>🎁</span>
+            <span className="text-white font-bold">{giftsCollected}</span>
           </div>
         </div>
       </div>
@@ -793,6 +942,7 @@ export default function GamePlayer() {
         className="absolute inset-0 w-full h-full block touch-none z-10" 
       />
 
+
       {/* Loading Screen Overlay */}
       {isLoading && (
         <div className="absolute inset-0 z-[200] bg-[#0A1128] flex flex-col items-center justify-center animate-[fadeIn_0.3s_ease-out]">
@@ -809,28 +959,77 @@ export default function GamePlayer() {
         </div>
       )}
 
+      {/* Instruction Overlay */}
+      {showInstruction && !isLoading && (
+        <div className="absolute inset-0 z-40 flex flex-col items-center justify-center animate-[fadeIn_0.5s_ease-out] pointer-events-none">
+          <div 
+            className="flex flex-col items-center origin-bottom" 
+            style={{ animation: 'tiltPhone 2.5s infinite ease-in-out' }}
+          >
+            <Smartphone size={90} className="text-white drop-shadow-[0_0_25px_rgba(255,255,255,0.7)]" strokeWidth={1.5} />
+          </div>
+          <div className="flex gap-10 mt-8">
+            <span className="text-white font-black uppercase tracking-widest text-[15px] flex items-center gap-2 drop-shadow-[0_0_10px_rgba(0,0,0,0.8)]">
+              <ChevronLeft size={24} strokeWidth={3} /> Tilt Left
+            </span>
+            <span className="text-white font-black uppercase tracking-widest text-[15px] flex items-center gap-2 drop-shadow-[0_0_10px_rgba(0,0,0,0.8)]">
+              Tilt Right <ChevronRight size={24} strokeWidth={3} />
+            </span>
+          </div>
+        </div>
+      )}
+
+      {/* Game Over Screen */}
       {/* Game Over Screen */}
       {isGameOver && (
-        <div className="absolute inset-0 bg-black/80 backdrop-blur-sm flex flex-col items-center justify-center z-30">
-          <h2 className="text-5xl font-black text-red-500 mb-2 uppercase tracking-widest drop-shadow-[0_0_20px_rgba(239,68,68,0.5)]">Game Over</h2>
-          <p className="text-white text-xl mb-4 font-bold">Distance: <span className="text-happiness-lime">{score}</span></p>
-          <p className="text-white text-xl mb-8 font-bold flex items-center gap-2">
-            Coins Collected: <span className="text-yellow-400">{coinsCollected}</span>
-            <div className="w-5 h-5 rounded-full bg-yellow-400 border-2 border-yellow-200"></div>
-          </p>
+        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-indigo-900/95 via-[#0A1128]/95 to-black flex flex-col items-center justify-center z-30 overflow-hidden animate-[fadeIn_0.5s_ease-out]">
+          {/* Animated floating stars background in CSS */}
+          <div className="absolute inset-0 opacity-20 bg-[url('https://firebasestorage.googleapis.com/v0/b/gamefaktory-1b0b8.firebasestorage.app/o/lulu-happiness%2Fbg.webp?alt=media')] bg-cover bg-center animate-[pulse_4s_ease-in-out_infinite]"></div>
+          <h2 
+            className="relative z-10 text-5xl sm:text-7xl font-black mb-6 uppercase tracking-wider text-center transform -rotate-3" 
+            style={{ 
+              fontFamily: '"Impact", "Arial Black", sans-serif',
+              color: '#ff2a40',
+              WebkitTextStroke: '2px #0f172a',
+              textShadow: `
+                1px 1px 0 #0f172a, 2px 2px 0 #0f172a, 3px 3px 0 #0f172a, 
+                4px 4px 0 #0f172a, 5px 5px 0 #0f172a, 6px 6px 0 #0f172a, 
+                7px 7px 0 #0f172a, 8px 8px 0 #0f172a, 9px 9px 0 #0f172a,
+                10px 10px 0 #0f172a, 11px 11px 0 #facc15, 12px 12px 0 #facc15,
+                13px 13px 0 #facc15, 14px 14px 0 #facc15, 18px 18px 20px rgba(0,0,0,0.6)
+              `
+            }}
+          >
+            MISSION FAILED
+          </h2>
+          
+          <div className="relative z-10 bg-white/5 border border-white/10 backdrop-blur-md rounded-3xl p-8 mt-6 mb-10 flex flex-col items-center shadow-[0_0_50px_rgba(0,0,0,0.8)] min-w-[280px]">
+            <p className="text-cyan-200 text-sm sm:text-base mb-1 font-mono uppercase tracking-widest">Gifts Secured</p>
+            <p className="text-white text-6xl sm:text-7xl font-black mb-8 drop-shadow-[0_0_15px_rgba(255,255,255,0.5)] flex items-center gap-4">
+              <span className="text-4xl">🎁</span> {giftsCollected}
+            </p>
+            
+            <div className="flex items-center gap-4 bg-black/60 rounded-full px-6 py-3 border border-yellow-500/30 w-full justify-center shadow-[inset_0_0_15px_rgba(0,0,0,0.8)]">
+              <span className="text-yellow-400 font-bold uppercase tracking-widest text-sm">Loot</span>
+              <span className="text-white font-black text-3xl mx-2">{coinsCollected}</span>
+              <div className="w-8 h-8 rounded-full bg-gradient-to-br from-yellow-200 via-yellow-400 to-yellow-600 shadow-[0_0_15px_rgba(250,204,21,0.8)] border-2 border-yellow-100 flex items-center justify-center">
+                <div className="w-3 h-3 bg-yellow-100 rounded-full opacity-50 transform -translate-y-1 -translate-x-1"></div>
+              </div>
+            </div>
+          </div>
           
           <button 
             onClick={() => {
-              setScore(0);
+              setGiftsCollected(0);
               setCoinsCollected(0);
               setLoadProgress(0);
               setIsLoading(true);
               setIsGameOver(false);
             }}
-            className="bg-happiness-lime text-black font-bold text-xl px-8 py-4 rounded-2xl flex items-center gap-3 active:scale-95 transition-transform shadow-[0_0_30px_rgba(154,205,50,0.5)] pointer-events-auto"
+            className="relative z-10 bg-gradient-to-r from-happiness-lime to-green-500 text-black font-black text-2xl uppercase tracking-wider px-10 py-5 rounded-full flex items-center gap-4 active:scale-95 transition-all hover:scale-105 hover:shadow-[0_0_40px_rgba(154,205,50,0.8)] shadow-[0_0_20px_rgba(154,205,50,0.4)] pointer-events-auto border-2 border-white/50 group"
           >
-            <RotateCcw size={24} strokeWidth={2.5} />
-            Play Again
+            <RotateCcw size={28} strokeWidth={3} className="group-hover:animate-spin" />
+            RELAUNCH
           </button>
         </div>
       )}
