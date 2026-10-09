@@ -1,12 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { X, RotateCcw, Trophy, Play } from 'lucide-react';
+import { X, RotateCcw, Trophy, Play, Shuffle } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
 const TILE_TYPES = ['🍎', '🧀', '🍉', '💎', '🌸', '🥝', '🍬', '🥑', '🍔', '🍕', '🍩', '🍟', '🍇', '🍒', '🍓'];
 
 const LEVELS = [
-  // Level 1: 30 tiles
+  // Level 1: 30 tiles (Original 1)
   [
     {x: 2, y: 2, z: 0}, {x: 4, y: 2, z: 0}, {x: 6, y: 2, z: 0}, {x: 8, y: 2, z: 0},
     {x: 2, y: 4, z: 0}, {x: 4, y: 4, z: 0}, {x: 6, y: 4, z: 0}, {x: 8, y: 4, z: 0},
@@ -18,7 +18,7 @@ const LEVELS = [
     {x: 4, y: 4, z: 2}, {x: 6, y: 4, z: 2}, {x: 4, y: 6, z: 2}, {x: 6, y: 6, z: 2},
     {x: 5, y: 5, z: 3}
   ],
-  // Level 2: 24 tiles
+  // Level 2: 24 tiles (Original 2)
   [
     {x: 2, y: 2, z: 0}, {x: 4, y: 2, z: 0}, {x: 6, y: 2, z: 0}, {x: 8, y: 2, z: 0},
     {x: 2, y: 4, z: 0},                                         {x: 8, y: 4, z: 0},
@@ -30,7 +30,7 @@ const LEVELS = [
     {x: 4, y: 8, z: 2}, {x: 6, y: 8, z: 2},
     {x: 5, y: 2, z: 3}, {x: 5, y: 8, z: 3}
   ],
-  // Level 3: 36 tiles
+  // Level 3: 36 tiles (Original 3)
   [
     {x: 2, y: 2, z: 0}, {x: 4, y: 2, z: 0}, {x: 6, y: 2, z: 0}, {x: 8, y: 2, z: 0},
     {x: 2, y: 4, z: 0}, {x: 4, y: 4, z: 0}, {x: 6, y: 4, z: 0}, {x: 8, y: 4, z: 0},
@@ -44,6 +44,99 @@ const LEVELS = [
     {x: 7, y: 4, z: 3}, {x: 7, y: 6, z: 3},
     {x: 3, y: 5, z: 4}, {x: 7, y: 5, z: 4},
     {x: 5, y: 5, z: 0}, {x: 5, y: 5, z: 1}, {x: 5, y: 5, z: 2}, {x: 5, y: 5, z: 3}
+  ],
+  // Level 4: Diamond (24 tiles)
+  [
+    {x: 5, y: 1, z: 0}, {x: 4, y: 2, z: 0}, {x: 6, y: 2, z: 0}, {x: 3, y: 3, z: 0}, {x: 7, y: 3, z: 0}, {x: 2, y: 4, z: 0}, {x: 8, y: 4, z: 0}, {x: 1, y: 5, z: 0}, {x: 9, y: 5, z: 0}, {x: 2, y: 6, z: 0}, {x: 8, y: 6, z: 0}, {x: 3, y: 7, z: 0}, {x: 7, y: 7, z: 0}, {x: 4, y: 8, z: 0}, {x: 6, y: 8, z: 0}, {x: 5, y: 9, z: 0},
+    {x: 5, y: 3, z: 1}, {x: 4, y: 4, z: 1}, {x: 6, y: 4, z: 1}, {x: 3, y: 5, z: 1}, {x: 7, y: 5, z: 1}, {x: 4, y: 6, z: 1}, {x: 6, y: 6, z: 1}, {x: 5, y: 7, z: 1}
+  ],
+  // Level 5: Four Squares (36 tiles)
+  [
+    {x: 2, y: 2, z: 0}, {x: 3, y: 2, z: 0}, {x: 2, y: 3, z: 0}, {x: 3, y: 3, z: 0},
+    {x: 7, y: 2, z: 0}, {x: 8, y: 2, z: 0}, {x: 7, y: 3, z: 0}, {x: 8, y: 3, z: 0},
+    {x: 2, y: 7, z: 0}, {x: 3, y: 7, z: 0}, {x: 2, y: 8, z: 0}, {x: 3, y: 8, z: 0},
+    {x: 7, y: 7, z: 0}, {x: 8, y: 7, z: 0}, {x: 7, y: 8, z: 0}, {x: 8, y: 8, z: 0},
+    
+    {x: 2, y: 2, z: 1}, {x: 3, y: 2, z: 1}, {x: 2, y: 3, z: 1}, {x: 3, y: 3, z: 1},
+    {x: 7, y: 2, z: 1}, {x: 8, y: 2, z: 1}, {x: 7, y: 3, z: 1}, {x: 8, y: 3, z: 1},
+    {x: 2, y: 7, z: 1}, {x: 3, y: 7, z: 1}, {x: 2, y: 8, z: 1}, {x: 3, y: 8, z: 1},
+    {x: 7, y: 7, z: 1}, {x: 8, y: 7, z: 1}, {x: 7, y: 8, z: 1}, {x: 8, y: 8, z: 1},
+
+    {x: 4, y: 4, z: 0}, {x: 5, y: 4, z: 0}, {x: 4, y: 5, z: 0}, {x: 5, y: 5, z: 0}
+  ],
+  // Level 6: Pyramid (33 tiles)
+  [
+    {x: 4, y: 3, z: 0}, {x: 5, y: 3, z: 0}, {x: 6, y: 3, z: 0}, 
+    {x: 3, y: 4, z: 0}, {x: 4, y: 4, z: 0}, {x: 5, y: 4, z: 0}, {x: 6, y: 4, z: 0}, {x: 7, y: 4, z: 0},
+    {x: 3, y: 5, z: 0}, {x: 4, y: 5, z: 0}, {x: 5, y: 5, z: 0}, {x: 6, y: 5, z: 0}, {x: 7, y: 5, z: 0},
+    {x: 3, y: 6, z: 0}, {x: 4, y: 6, z: 0}, {x: 5, y: 6, z: 0}, {x: 6, y: 6, z: 0}, {x: 7, y: 6, z: 0},
+    {x: 4, y: 7, z: 0}, {x: 5, y: 7, z: 0}, {x: 6, y: 7, z: 0},
+    
+    {x: 4, y: 4, z: 1}, {x: 5, y: 4, z: 1}, {x: 6, y: 4, z: 1},
+    {x: 4, y: 5, z: 1}, {x: 5, y: 5, z: 1}, {x: 6, y: 5, z: 1},
+    {x: 4, y: 6, z: 1}, {x: 5, y: 6, z: 1}, {x: 6, y: 6, z: 1},
+    
+    {x: 5, y: 5, z: 2},
+    {x: 5, y: 5, z: 3},
+    {x: 5, y: 5, z: 4}
+  ],
+  // Level 7: Two Towers (42 tiles)
+  [
+    {x: 3, y: 3, z: 0}, {x: 3, y: 4, z: 0}, {x: 3, y: 5, z: 0}, {x: 3, y: 6, z: 0}, {x: 3, y: 7, z: 0},
+    {x: 7, y: 3, z: 0}, {x: 7, y: 4, z: 0}, {x: 7, y: 5, z: 0}, {x: 7, y: 6, z: 0}, {x: 7, y: 7, z: 0},
+    
+    {x: 3, y: 3, z: 1}, {x: 3, y: 4, z: 1}, {x: 3, y: 5, z: 1}, {x: 3, y: 6, z: 1}, {x: 3, y: 7, z: 1},
+    {x: 7, y: 3, z: 1}, {x: 7, y: 4, z: 1}, {x: 7, y: 5, z: 1}, {x: 7, y: 6, z: 1}, {x: 7, y: 7, z: 1},
+
+    {x: 3, y: 3, z: 2}, {x: 3, y: 4, z: 2}, {x: 3, y: 5, z: 2}, {x: 3, y: 6, z: 2}, {x: 3, y: 7, z: 2},
+    {x: 7, y: 3, z: 2}, {x: 7, y: 4, z: 2}, {x: 7, y: 5, z: 2}, {x: 7, y: 6, z: 2}, {x: 7, y: 7, z: 2},
+
+    {x: 3, y: 3, z: 3}, {x: 3, y: 4, z: 3}, {x: 3, y: 5, z: 3}, {x: 3, y: 6, z: 3}, {x: 3, y: 7, z: 3},
+    {x: 7, y: 3, z: 3}, {x: 7, y: 4, z: 3}, {x: 7, y: 5, z: 3}, {x: 7, y: 6, z: 3}, {x: 7, y: 7, z: 3},
+
+    {x: 5, y: 5, z: 0}, {x: 5, y: 5, z: 1}
+  ],
+  // Level 8: X Shape (27 tiles)
+  [
+    {x: 2, y: 2, z: 0}, {x: 3, y: 3, z: 0}, {x: 4, y: 4, z: 0}, {x: 5, y: 5, z: 0}, {x: 6, y: 6, z: 0}, {x: 7, y: 7, z: 0}, {x: 8, y: 8, z: 0},
+    {x: 2, y: 8, z: 0}, {x: 3, y: 7, z: 0}, {x: 4, y: 6, z: 0}, {x: 6, y: 4, z: 0}, {x: 7, y: 3, z: 0}, {x: 8, y: 2, z: 0},
+    
+    {x: 2, y: 2, z: 1}, {x: 3, y: 3, z: 1}, {x: 4, y: 4, z: 1}, {x: 5, y: 5, z: 1}, {x: 6, y: 6, z: 1}, {x: 7, y: 7, z: 1}, {x: 8, y: 8, z: 1},
+    {x: 2, y: 8, z: 1}, {x: 3, y: 7, z: 1}, {x: 4, y: 6, z: 1}, {x: 6, y: 4, z: 1}, {x: 7, y: 3, z: 1}, {x: 8, y: 2, z: 1},
+    
+    {x: 5, y: 5, z: 2}
+  ],
+  // Level 9: Hollow Box (33 tiles)
+  [
+    {x: 3, y: 3, z: 0}, {x: 4, y: 3, z: 0}, {x: 5, y: 3, z: 0}, {x: 6, y: 3, z: 0}, {x: 7, y: 3, z: 0},
+    {x: 3, y: 4, z: 0},                                                             {x: 7, y: 4, z: 0},
+    {x: 3, y: 5, z: 0},                                                             {x: 7, y: 5, z: 0},
+    {x: 3, y: 6, z: 0},                                                             {x: 7, y: 6, z: 0},
+    {x: 3, y: 7, z: 0}, {x: 4, y: 7, z: 0}, {x: 5, y: 7, z: 0}, {x: 6, y: 7, z: 0}, {x: 7, y: 7, z: 0},
+    
+    {x: 3, y: 3, z: 1}, {x: 4, y: 3, z: 1}, {x: 5, y: 3, z: 1}, {x: 6, y: 3, z: 1}, {x: 7, y: 3, z: 1},
+    {x: 3, y: 4, z: 1},                                                             {x: 7, y: 4, z: 1},
+    {x: 3, y: 5, z: 1},                                                             {x: 7, y: 5, z: 1},
+    {x: 3, y: 6, z: 1},                                                             {x: 7, y: 6, z: 1},
+    {x: 3, y: 7, z: 1}, {x: 4, y: 7, z: 1}, {x: 5, y: 7, z: 1}, {x: 6, y: 7, z: 1}, {x: 7, y: 7, z: 1},
+
+    {x: 5, y: 5, z: 0}
+  ],
+  // Level 10: Checkerboard (30 tiles)
+  [
+    {x: 2, y: 2, z: 0}, {x: 4, y: 2, z: 0}, {x: 6, y: 2, z: 0}, {x: 8, y: 2, z: 0},
+    {x: 3, y: 3, z: 0}, {x: 5, y: 3, z: 0}, {x: 7, y: 3, z: 0},
+    {x: 2, y: 4, z: 0}, {x: 4, y: 4, z: 0}, {x: 6, y: 4, z: 0}, {x: 8, y: 4, z: 0},
+    {x: 3, y: 5, z: 0}, {x: 5, y: 5, z: 0}, {x: 7, y: 5, z: 0},
+    {x: 2, y: 6, z: 0}, {x: 4, y: 6, z: 0}, {x: 6, y: 6, z: 0}, {x: 8, y: 6, z: 0},
+    {x: 3, y: 7, z: 0}, {x: 5, y: 7, z: 0}, {x: 7, y: 7, z: 0},
+    
+    {x: 4, y: 4, z: 1}, {x: 6, y: 4, z: 1}, 
+    {x: 5, y: 5, z: 1}, 
+    {x: 4, y: 6, z: 1}, {x: 6, y: 6, z: 1},
+    
+    {x: 3, y: 3, z: 1}, {x: 7, y: 3, z: 1}, 
+    {x: 3, y: 7, z: 1}, {x: 7, y: 7, z: 1}
   ]
 ];
 
@@ -56,8 +149,26 @@ const shuffle = (array) => {
   return arr;
 };
 
+const SOUNDS = {
+  click: new Audio('https://firebasestorage.googleapis.com/v0/b/gamefaktory-1b0b8.firebasestorage.app/o/lulu-happiness%2Ffloraphonic-bloop-1-184019.mp3?alt=media'),
+  match: new Audio('https://firebasestorage.googleapis.com/v0/b/gamefaktory-1b0b8.firebasestorage.app/o/lulu-happiness%2Ffloraphonic-marimba-win-b-3-209679.mp3?alt=media'),
+  win: new Audio('https://firebasestorage.googleapis.com/v0/b/gamefaktory-1b0b8.firebasestorage.app/o/lulu-happiness%2Fcollectpower.mp3?alt=media'),
+  fail: new Audio('https://firebasestorage.googleapis.com/v0/b/gamefaktory-1b0b8.firebasestorage.app/o/lulu-happiness%2Fu_8g40a9z0la-fail-234710.mp3?alt=media')
+};
+
+const playSound = (type) => {
+  try {
+    const s = SOUNDS[type];
+    s.currentTime = 0;
+    if (type === 'click') s.volume = 0.5;
+    s.play().catch(() => {});
+  } catch (e) {}
+};
+
 export default function GameMatch() {
   const navigate = useNavigate();
+
+  // Initialize sounds outside to avoid recreation, but inside component is fine if we use useMemo, but standard practice for simple apps is outside. Let's define it outside.
   const [tiles, setTiles] = useState([]);
   const [tray, setTray] = useState([]);
   const [gameState, setGameState] = useState('playing'); // 'playing', 'won', 'lost'
@@ -66,6 +177,8 @@ export default function GameMatch() {
   const [coins, setCoins] = useState(0);
   const [gifts, setGifts] = useState(0);
   const [giftAwarded, setGiftAwarded] = useState(false);
+  const [shufflesLeft, setShufflesLeft] = useState(3);
+  const [isShuffling, setIsShuffling] = useState(false);
   
   const TILE_SIZE = 60;
   const HALF_SIZE = TILE_SIZE / 2;
@@ -80,6 +193,7 @@ export default function GameMatch() {
 
     const newTiles = layout.map((pos, idx) => ({
       id: idx,
+      levelId: currentLevel,
       type: tileTypes[idx],
       x: pos.x,
       y: pos.y,
@@ -91,6 +205,34 @@ export default function GameMatch() {
     setTray([]);
     setGiftAwarded(false);
     setGameState('playing');
+    setShufflesLeft(3);
+    setIsShuffling(false);
+  };
+
+  const handleShuffleBoard = () => {
+    if (shufflesLeft <= 0 || gameState !== 'playing' || isShuffling) return;
+    
+    playSound('click');
+    setShufflesLeft(prev => prev - 1);
+    setIsShuffling(true);
+    
+    setTimeout(() => {
+      setTiles(prevTiles => {
+        const boardTiles = prevTiles.filter(t => t.state === 'board');
+        const trayTiles = prevTiles.filter(t => t.state === 'tray');
+        
+        let types = boardTiles.map(t => t.type);
+        types = shuffle(types);
+        
+        const newBoardTiles = boardTiles.map((t, i) => ({
+          ...t,
+          type: types[i]
+        }));
+        
+        return [...newBoardTiles, ...trayTiles];
+      });
+      setIsShuffling(false);
+    }, 300);
   };
 
   useEffect(() => {
@@ -110,6 +252,8 @@ export default function GameMatch() {
   const handleTileClick = (tile) => {
     if (gameState !== 'playing' || tile.state !== 'board' || isCovered(tile)) return;
     if (tray.length >= 7) return;
+
+    playSound('click');
 
     // Move to tray
     const newTiles = tiles.map(t => t.id === tile.id ? { ...t, state: 'tray' } : t);
@@ -136,6 +280,7 @@ export default function GameMatch() {
     if (matchedType) {
       setTray(newTray);
       setTimeout(() => {
+        playSound('match');
         setTray(prevTray => prevTray.filter(t => t.type !== matchedType));
         
         // Rewards Logic
@@ -155,26 +300,35 @@ export default function GameMatch() {
         }
 
         if (isLastMatch) {
+          setTimeout(() => playSound('win'), 200);
           setGameState('won');
         }
       }, 400); // Wait for physical movement before bursting
     } else {
       setTray(newTray);
       if (newTray.length === 7) {
-        setTimeout(() => setGameState('lost'), 400);
+        setTimeout(() => {
+          playSound('fail');
+          setGameState('lost');
+        }, 400);
       }
     }
   };
 
   return (
-    <div 
-      className="fixed inset-0 flex flex-col items-center justify-between text-gray-800 font-sans z-[100] animate-[fadeIn_0.3s_ease-out]"
-      style={{
-        backgroundImage: 'linear-gradient(rgba(0,0,0,0.1), rgba(0,0,0,0.1)), url("https://firebasestorage.googleapis.com/v0/b/gamefaktory-1b0b8.firebasestorage.app/o/lulu-happiness%2Flulubg.webp?alt=media")',
-        backgroundSize: 'cover',
-        backgroundPosition: 'center'
-      }}
-    >
+    <div className="fixed inset-0 flex flex-col items-center justify-between text-gray-800 font-sans z-[100] animate-[fadeIn_0.3s_ease-out] overflow-hidden">
+      
+      {/* Blurred Background */}
+      <div 
+        className="absolute inset-0 z-[-1]"
+        style={{
+          backgroundImage: 'linear-gradient(rgba(255,255,255,0.2), rgba(255,255,255,0.2)), url("https://firebasestorage.googleapis.com/v0/b/gamefaktory-1b0b8.firebasestorage.app/o/lulu-happiness%2Flulubg.webp?alt=media")',
+          backgroundSize: 'cover',
+          backgroundPosition: 'center',
+          filter: 'blur(2px)',
+          transform: 'scale(1.05)' // Prevents the blur from pulling in the edges
+        }}
+      />
       {/* Top HUD */}
       <div className="w-full p-6 flex justify-between items-start z-20">
         <button 
@@ -215,9 +369,9 @@ export default function GameMatch() {
             const covered = isCovered(tile);
             return (
               <motion.div
-                layoutId={`tile-${level}-${tile.id}`}
+                layoutId={`tile-${tile.levelId}-${tile.id}`}
                 layout
-                key={`${level}-${tile.id}`}
+                key={`${tile.levelId}-${tile.id}`}
                 onClick={() => handleTileClick(tile)}
                 className={`absolute rounded-[14px] bg-gradient-to-b from-[#fffefc] to-[#e8e0cc] shadow-[0_4px_0_#b5a48b,0_6px_10px_rgba(0,0,0,0.2)] flex items-center justify-center text-4xl border border-white/50 cursor-pointer ${covered ? 'brightness-[0.7] cursor-not-allowed' : 'hover:brightness-110'}`}
                 style={{
@@ -227,8 +381,10 @@ export default function GameMatch() {
                   top: tile.y * HALF_SIZE - HALF_SIZE,
                   zIndex: tile.z * 10,
                 }}
-                whileHover={!covered ? { y: -2 } : {}}
-                whileTap={!covered ? { y: 2, scale: 0.95, boxShadow: '0 0px 0 #b5a48b, 0 2px 5px rgba(0,0,0,0.2)' } : {}}
+                animate={isShuffling ? { scale: 0, rotate: 180 } : { scale: 1, rotate: 0 }}
+                transition={{ duration: 0.3, type: 'spring', bounce: 0.2 }}
+                whileHover={!covered && !isShuffling ? { y: -2 } : {}}
+                whileTap={!covered && !isShuffling ? { y: 2, scale: 0.95, boxShadow: '0 0px 0 #b5a48b, 0 2px 5px rgba(0,0,0,0.2)' } : {}}
               >
                 {tile.type}
               </motion.div>
@@ -237,15 +393,26 @@ export default function GameMatch() {
         </div>
       </div>
 
+      <div className="w-full flex justify-end px-6 sm:px-10 mb-[-10px] z-10 pointer-events-none">
+        <button 
+          onClick={handleShuffleBoard}
+          disabled={shufflesLeft === 0 || gameState !== 'playing'}
+          className={`flex items-center gap-2 px-4 py-2 rounded-full font-bold shadow-lg pointer-events-auto transition-transform active:scale-95 ${shufflesLeft > 0 ? 'bg-gradient-to-r from-purple-500 to-indigo-600 text-white' : 'bg-gray-400 text-gray-200 cursor-not-allowed'}`}
+        >
+          <Shuffle size={18} />
+          Shuffle ({shufflesLeft})
+        </button>
+      </div>
+
       {/* Bottom Tray */}
       <div className="w-full max-w-md mx-auto px-2 sm:px-4 pb-10 pt-4">
         <div className="bg-[#d9975b] rounded-2xl p-2 shadow-[inset_0_4px_10px_rgba(0,0,0,0.3)] flex justify-start gap-1 sm:gap-2 overflow-visible items-center w-fit mx-auto h-[58px] border-2 border-white/30">
           <AnimatePresence>
             {tray.map(tile => (
               <motion.div 
-                layoutId={`tile-${level}-${tile.id}`}
+                layoutId={`tile-${tile.levelId}-${tile.id}`}
                 layout
-                key={`${level}-${tile.id}`}
+                key={`${tile.levelId}-${tile.id}`}
                 initial={{ scale: 1 }}
                 animate={{ scale: 1 }}
                 exit={{ 

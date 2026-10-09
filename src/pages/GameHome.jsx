@@ -72,6 +72,16 @@ export default function GameHome() {
         <div className="mt-2 w-full pt-2">
           <Link 
             to={`/play/${id}`}
+            onClick={() => {
+              try {
+                const docEl = document.documentElement;
+                if (docEl.requestFullscreen) {
+                  docEl.requestFullscreen().catch(() => {});
+                } else if (docEl.webkitRequestFullscreen) {
+                  docEl.webkitRequestFullscreen().catch(() => {});
+                }
+              } catch (err) {}
+            }}
             className="w-full relative overflow-hidden bg-gradient-to-r from-lulu-green to-[#0ba83f] shadow-[0_10px_30px_rgba(11,168,63,0.5)] rounded-2xl py-4 flex items-center justify-center gap-3 active:scale-[0.98] transition-transform"
           >
             <div className="absolute inset-0 -translate-x-full bg-gradient-to-r from-transparent via-white/30 to-transparent skew-x-12 animate-[shine_2s_infinite_ease-in-out]"></div>
